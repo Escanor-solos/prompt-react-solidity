@@ -30,11 +30,11 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an expert Solidity developer. Generate clean, secure, well-documented Solidity smart contracts. Include SPDX license, pragma version, and comprehensive comments. Follow best practices for security and gas optimization. Return ONLY the Solidity code without any markdown formatting or explanations."
+            content: "You are an expert Solidity developer specializing in Avalanche blockchain and ERC-4337 Account Abstraction. Generate clean, secure, well-documented Solidity smart contracts that integrate 0xGasless SDK for gasless transactions. Include SPDX license, pragma version, and comprehensive comments. Implement ERC-4337 smart wallet patterns where appropriate. Follow best practices for security and gas optimization on Avalanche C-Chain. Return ONLY the Solidity code without any markdown formatting or explanations."
           },
           {
             role: "user",
-            content: `Generate a Solidity smart contract for: ${prompt}`
+            content: `Generate a Solidity smart contract for Avalanche blockchain with 0xGasless integration for: ${prompt}. Include gasless transaction support using ERC-4337 Account Abstraction where applicable.`
           }
         ],
       }),
@@ -61,11 +61,11 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an expert React and Web3 developer. Generate modern React components using TypeScript, hooks, and ethers.js or wagmi for Web3 integration. Create a clean, functional interface that interacts with the smart contract. Use Tailwind CSS for styling. Return ONLY the React/TypeScript code without any markdown formatting or explanations. Include necessary imports and proper TypeScript types."
+            content: "You are an expert React and Web3 developer specializing in Avalanche blockchain and 0xGasless SDK integration. Generate modern React components using TypeScript, hooks, ethers.js v6, and 0xGasless SDK for gasless transactions. Create a clean, functional interface that interacts with the smart contract on Avalanche C-Chain. Implement Account Abstraction (ERC-4337) features using 0xGasless SDK to enable gasless transactions. Use Tailwind CSS for styling. Return ONLY the React/TypeScript code without any markdown formatting or explanations. Include necessary imports, 0xGasless SDK initialization, and proper TypeScript types. Configure for Avalanche C-Chain RPC."
           },
           {
             role: "user",
-            content: `Generate a React frontend component that interacts with this smart contract:\n\n${solidityCode}\n\nOriginal request: ${prompt}`
+            content: `Generate a React frontend component for Avalanche blockchain that interacts with this smart contract using 0xGasless SDK for gasless transactions:\n\n${solidityCode}\n\nOriginal request: ${prompt}\n\nInclude: 0xGasless SDK setup, smart wallet creation, gasless transaction handling, and Avalanche C-Chain configuration.`
           }
         ],
       }),

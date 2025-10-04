@@ -71,7 +71,7 @@ const Index = () => {
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             VibeCoding transforms natural language into production-ready decentralized applications. 
-            Get both smart contracts and React frontends instantly.
+            Get gasless dApps on Avalanche with 0xGasless integration.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ const Index = () => {
         <div className="max-w-4xl mx-auto mb-8">
           <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
             <Textarea
-              placeholder="Describe your dApp... (e.g., 'Create an NFT marketplace with royalty payments')"
+              placeholder="Describe your dApp... (e.g., 'Create an NFT marketplace with royalty payments on Avalanche')"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               className="min-h-32 text-lg bg-background border-input resize-none"
@@ -140,7 +140,7 @@ const Index = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">Smart Contracts</h3>
               <p className="text-muted-foreground">
-                AI-generated Solidity code with security best practices
+                AI-generated Solidity with 0xGasless & ERC-4337 on Avalanche
               </p>
             </div>
 
@@ -148,9 +148,9 @@ const Index = () => {
               <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">React Frontend</h3>
+              <h3 className="text-lg font-semibold mb-2">Gasless Frontend</h3>
               <p className="text-muted-foreground">
-                Modern UI components ready to interact with your contracts
+                0xGasless SDK integrated UI for seamless user experience
               </p>
             </div>
 
@@ -158,9 +158,9 @@ const Index = () => {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Rocket className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Deploy Instantly</h3>
+              <h3 className="text-lg font-semibold mb-2">Deploy to Avalanche</h3>
               <p className="text-muted-foreground">
-                Copy, customize, and deploy to any EVM-compatible chain
+                Production-ready code for Avalanche C-Chain deployment
               </p>
             </div>
           </div>
