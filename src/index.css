@@ -2,100 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Definition of the design system. All colors, gradients, fonts, etc. are defined here.
 */
-
 @layer base {
   :root {
-    /* Cosmic theme inspired by black hole imagery */
-    --background: 220 40% 5%;
-    --foreground: 35 100% 92%;
+    --background: 222 84% 5%;
+    --foreground: 210 40% 98%;
 
-    --card: 220 30% 8%;
-    --card-foreground: 35 100% 92%;
+    --card: 225 25% 10%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 220 30% 10%;
-    --popover-foreground: 35 100% 92%;
+    --popover: 225 25% 10%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 30 100% 55%;
-    --primary-foreground: 220 40% 5%;
+    --primary: 263 90% 65%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 270 60% 50%;
-    --secondary-foreground: 35 100% 92%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 220 20% 15%;
-    --muted-foreground: 35 80% 85%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 35 100% 60%;
-    --accent-foreground: 220 40% 5%;
+    --accent: 220 90% 60%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 20% 18%;
-    --input: 220 20% 12%;
-    --ring: 30 100% 55%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 263 90% 65%;
 
     --radius: 0.75rem;
 
-    /* Custom cosmic variables */
-    --glow-primary: 30 100% 55%;
-    --glow-secondary: 270 60% 50%;
-    
     /* Gradients */
-    --gradient-cosmic: linear-gradient(135deg, hsl(30 100% 55%) 0%, hsl(270 60% 50%) 100%);
-    --gradient-radial: radial-gradient(circle at center, hsl(30 100% 55% / 0.2) 0%, transparent 70%);
+    --gradient-primary: linear-gradient(135deg, hsl(263 90% 65%) 0%, hsl(220 90% 60%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(222 84% 5%) 0%, hsl(225 25% 10%) 100%);
+    --glow-purple: 0 0 40px hsl(263 90% 65% / 0.3);
+    --glow-blue: 0 0 40px hsl(220 90% 60% / 0.3);
   }
-}
 
-@layer base {
+  /* Universal border rule */
   * {
     @apply border-border;
   }
-
+  
+  /* Make the body's own background transparent so we can see the pseudo-element behind it */
   body {
-    @apply bg-background text-foreground;
-    background-image: url('https://i.pinimg.com/736x/80/7f/b5/807fb5c3c5efb50dd303ae17e242ac96.jpg');
+    background-color: transparent;
+  }
+
+  /* This is the new, correct way to handle the background image.
+    It creates a layer behind your content that we can safely rotate.
+  */
+  body::before {
+    content: ''; /* Required for pseudo-elements */
+    position: fixed; /* Covers the entire screen */
+    inset: 0; /* Shortcut for top: 0, right: 0, bottom: 0, left: 0 */
+    z-index: -1; /* Pushes the layer behind all of your page content */
+
+    /* The background image and its properties go here now */
+    background-image: url('/black-hole-image.jpg'); /* Correct path to the image in your /public folder */
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
     background-repeat: no-repeat;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 50% 50%, transparent 0%, hsl(220 40% 5% / 0.75) 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  #root {
-    position: relative;
-    z-index: 1;
-  }
-}
-
-@layer utilities {
-  .cosmic-glow {
-    box-shadow: 0 0 30px hsl(var(--glow-primary) / 0.3),
-                0 0 60px hsl(var(--glow-primary) / 0.15);
-  }
-
-  .cosmic-glow-secondary {
-    box-shadow: 0 0 30px hsl(var(--glow-secondary) / 0.3),
-                0 0 60px hsl(var(--glow-secondary) / 0.15);
-  }
-
-  .text-gradient {
-    background: var(--gradient-cosmic);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    
+    /* THE ROTATION EFFECT!
+      - You can change `15deg` to any rotation you like (e.g., -10deg, 45deg).
+      - `scale(1.2)` makes the image slightly bigger to prevent empty corners after rotation.
+    */
+    transform: rotate(15deg) scale(1.2);
   }
 }
