@@ -18,8 +18,6 @@ const Index = () => {
       return;
     }
 
-    // Removed the misplaced snippet that caused an issue in the function body
-
     setLoading(true);
     setSolidityCode("");
     setReactCode("");
@@ -71,14 +69,14 @@ const Index = () => {
             Simple Prompts
           </h1>
           
-            {/* MODIFIED BLOCK STARTS HERE: Wrapper div for translucent box */}
-            <div className="p-4 rounded-xl bg-primary/10 backdrop-blur-sm mx-auto max-w-2xl">
-              <p className="text-xl text-muted-foreground">
-                VibeCoding transforms natural language into production-ready decentralized applications. 
-                Get gasless dApps on Avalanche with 0xGasless integration.
-              </p>
-            </div>
-            {/* MODIFIED BLOCK ENDS HERE */}
+          {/* MODIFIED BLOCK STARTS HERE */}
+          <div className="p-4 rounded-xl bg-black/20 backdrop-blur-sm mx-auto max-w-2xl"> {/* Changed bg-primary/10 to bg-black/20 */}
+            <p className="text-xl text-muted-foreground font-semibold"> {/* Added font-semibold */}
+              VibeCoding transforms natural language into production-ready decentralized applications. 
+              Get gasless dApps on Avalanche with 0xGasless integration.
+            </p>
+          </div>
+          {/* MODIFIED BLOCK ENDS HERE */}
 
         </div>
 
