@@ -50,8 +50,14 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground;
-  }
+  background-image: url('black hole image.jpg');
+  
+  /* You will often see these properties too: */
+  background-size: cover; /* Makes the image cover the whole screen */
+  background-position: center; /* Centers the image */
+  background-repeat: no-repeat; /* Prevents the image from tiling */
+  background-attachment: fixed; /* Makes the background stay in place when scrolling */
+}
+
 }
