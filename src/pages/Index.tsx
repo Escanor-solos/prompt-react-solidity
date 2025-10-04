@@ -17,12 +17,7 @@ const Index = () => {
       toast.error("Please enter a description for your dApp");
       return;
     }
-  const borderStyle = {
-  border: '1px solid #ccc',     // Light gray border
-  borderRadius: '8px',         // Rounded corners
-  padding: '4px 8px',          // Space between text and border
-  display: 'inline-block',     // Allows the box to wrap tightly around the content
-};
+
 
 // 2. Wrap your original component in the new styled element
 <span style={borderStyle}>
@@ -69,11 +64,9 @@ const Index = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm mb-4">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-muted-foreground">AI-Powered Development Platform</span>
             
-            <span style={borderStyle}>
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-muted-foreground">AI-Powered Development Platform</span>
-            </span>
           </div>
           
           <h1 className="text-5xl bg-gradient-to-r bg-clip-text md:text-7xl font-bold text-transparent from-primary to-accent">
