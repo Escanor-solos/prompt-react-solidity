@@ -51,7 +51,7 @@ All colors MUST be HSL.
     @apply border-border;
   }
   body {
-  background-image: url('black hole image.jpg');
+  background-image: url('https://i.pinimg.com/1200x/93/d4/a6/93d4a6f5c8ea295e3b24dd36f2540c39.jpg');
   
   /* You will often see these properties too: */
   background-size: cover; /* Makes the image cover the whole screen */
