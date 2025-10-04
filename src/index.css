@@ -72,6 +72,6 @@
       - You can change `15deg` to any rotation you like (e.g., -10deg, 45deg).
       - `scale(1.2)` makes the image slightly bigger to prevent empty corners after rotation.
     */
-    transform: rotate(15deg) scale(1.2);
+    transform: rotate(90deg) scale(1.2);
   }
 }
