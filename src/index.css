@@ -61,7 +61,7 @@
     position: fixed; /* Covers the entire screen */
     inset: 0; /* Shortcut for top: 0, right: 0, bottom: 0, left: 0 */
     z-index: -1; /* Pushes the layer behind all of your page content */
-
+    @apply bg-background text-foreground;
     /* The background image and its properties go here now */
     background-image: url('/black-hole-image.jpg'); /* Correct path to the image in your /public folder */
     background-size: cover;
