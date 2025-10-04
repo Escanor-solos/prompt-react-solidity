@@ -63,7 +63,7 @@ const Index = () => {
             <span className="text-muted-foreground">AI-Powered Development Platform</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-transparent from-primary to-accent">
+          <h1 className="text-5xl bg-gradient-to-r bg-clip-text md:text-7xl font-bold text-transparent from-primary to-accent">
             Build dApps with
             <br />
             Simple Prompts
