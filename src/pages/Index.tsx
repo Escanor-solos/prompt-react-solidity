@@ -58,26 +58,36 @@ const Index = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm mb-4"
+            style={{ 
+              border: '1px solid currentColor',
+              borderRadius: '9999px',
+              borderColor: 'hsl(var(--muted-foreground)/0.5)',
+            }}
+          >
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-muted-foreground">AI-Powered Development Platform</span>
           </div>
           
-          <h1 className="text-5xl bg-gradient-to-r bg-clip-text md:text-7xl font-bold text-transparent from-primary to-accent">
-            Build dApps with
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
+            <span className="text-white">Build dApps with </span>
+            <span style={{ color: '#ff9933' }}>Simple</span> {/* Orange color for 'Simple' */}
             <br />
-            Simple Prompts
+            <span style={{ 
+              backgroundImage: 'linear-gradient(to bottom, #ff9933, #66ccff)', /* Vertical Gradient from Orange to Cyan */
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              color: 'transparent', /* Fallback for browsers that don't support text fill color */
+            }}>Prompts</span>
           </h1>
           
-          {/* MODIFIED BLOCK STARTS HERE */}
-          <div className="p-4 rounded-xl bg-black/20 backdrop-blur-sm mx-auto max-w-2xl"> {/* Changed bg-primary/10 to bg-black/20 */}
-            <p className="text-xl text-muted-foreground font-semibold"> {/* Added font-semibold */}
+          <div className="p-4 rounded-xl bg-black/20 backdrop-blur-sm mx-auto max-w-2xl">
+            <p className="text-xl text-muted-foreground font-semibold">
               VibeCoding transforms natural language into production-ready decentralized applications. 
               Get gasless dApps on Avalanche with 0xGasless integration.
             </p>
           </div>
-          {/* MODIFIED BLOCK ENDS HERE */}
-
         </div>
 
         {/* Input Section */}
