@@ -69,28 +69,25 @@ const Index = () => {
             <span className="text-muted-foreground">AI-Powered Development Platform</span>
           </div>
           
-          {/* MODIFIED H1 BLOCK */}
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
             <span className="text-white">Build dApps with </span>
-            <span style={{ color: '#ff9933' }}>Simple</span> {/* Orange color for 'Simple' */}
+            <span style={{ color: '#ff9933' }}>Simple</span>
             <br />
             <span style={{ 
-              backgroundImage: 'linear-gradient(to bottom, #ff9933, #66ccff)', /* Vertical Gradient from Orange to Cyan */
+              backgroundImage: 'linear-gradient(to bottom, #ff9933, #66ccff)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              color: 'transparent', /* Fallback */
+              color: 'transparent',
             }}>Prompts</span>
           </h1>
           
-          {/* MODIFIED PARAGRAPH BLOCK (Translucent Box + Bolder Text) */}
           <div className="p-4 rounded-xl bg-black/20 backdrop-blur-sm mx-auto max-w-2xl">
             <p className="text-xl text-muted-foreground font-semibold">
               VibeCoding transforms natural language into production-ready decentralized applications. 
               Get gasless dApps on Avalanche with 0xGasless integration.
             </p>
           </div>
-
         </div>
 
         {/* Input Section */}
@@ -153,7 +150,7 @@ const Index = () => {
         {!hasGenerated && (
           <div className="max-w-5xl mx-auto mt-20 grid md:grid-cols-3 gap-8">
             {/* FEATURE 1: Smart Contracts */}
-            <div className="text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30">
+            <div className="group text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30 hover:scale-[1.03] hover:shadow-2xl hover:shadow-primary/50 cursor-pointer">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Code2 className="h-6 w-6 text-primary" />
               </div>
@@ -164,7 +161,7 @@ const Index = () => {
             </div>
 
             {/* FEATURE 2: Gasless Frontend */}
-            <div className="text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30">
+            <div className="group text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30 hover:scale-[1.03] hover:shadow-2xl hover:shadow-accent/50 cursor-pointer">
               <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="h-6 w-6 text-accent" />
               </div>
@@ -175,7 +172,7 @@ const Index = () => {
             </div>
 
             {/* FEATURE 3: Deploy to Avalanche */}
-            <div className="text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30">
+            <div className="group text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30 hover:scale-[1.03] hover:shadow-2xl hover:shadow-primary/50 cursor-pointer">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Rocket className="h-6 w-6 text-primary" />
               </div>
