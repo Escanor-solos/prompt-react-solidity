@@ -69,6 +69,7 @@ const Index = () => {
             <span className="text-muted-foreground">AI-Powered Development Platform</span>
           </div>
           
+          {/* MODIFIED H1 BLOCK */}
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
             <span className="text-white">Build dApps with </span>
             <span style={{ color: '#ff9933' }}>Simple</span> {/* Orange color for 'Simple' */}
@@ -78,16 +79,18 @@ const Index = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              color: 'transparent', /* Fallback for browsers that don't support text fill color */
+              color: 'transparent', /* Fallback */
             }}>Prompts</span>
           </h1>
           
+          {/* MODIFIED PARAGRAPH BLOCK (Translucent Box + Bolder Text) */}
           <div className="p-4 rounded-xl bg-black/20 backdrop-blur-sm mx-auto max-w-2xl">
             <p className="text-xl text-muted-foreground font-semibold">
               VibeCoding transforms natural language into production-ready decentralized applications. 
               Get gasless dApps on Avalanche with 0xGasless integration.
             </p>
           </div>
+
         </div>
 
         {/* Input Section */}
@@ -149,31 +152,34 @@ const Index = () => {
         {/* Features Section */}
         {!hasGenerated && (
           <div className="max-w-5xl mx-auto mt-20 grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
+            {/* FEATURE 1: Smart Contracts */}
+            <div className="text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Code2 className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Smart Contracts</h3>
+              <h3 className="text-lg font-semibold mb-2 text-white">Smart Contracts</h3>
               <p className="text-muted-foreground">
                 AI-generated Solidity with 0xGasless & ERC-4337 on Avalanche
               </p>
             </div>
 
-            <div className="text-center p-6">
+            {/* FEATURE 2: Gasless Frontend */}
+            <div className="text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30">
               <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Gasless Frontend</h3>
+              <h3 className="text-lg font-semibold mb-2 text-white">Gasless Frontend</h3>
               <p className="text-muted-foreground">
                 0xGasless SDK integrated UI for seamless user experience
               </p>
             </div>
 
-            <div className="text-center p-6">
+            {/* FEATURE 3: Deploy to Avalanche */}
+            <div className="text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Rocket className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Deploy to Avalanche</h3>
+              <h3 className="text-lg font-semibold mb-2 text-white">Deploy to Avalanche</h3>
               <p className="text-muted-foreground">
                 Production-ready code for Avalanche C-Chain deployment
               </p>
