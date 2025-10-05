@@ -1,109 +1,60 @@
-// src/components/WalletConnect.tsx
+import React, { useEffect, useState } from "react";
+import { smartTransfer, getBalanceAction } from "../core/agentkit";
+import { ethers } from "ethers";
 
-import { useState } from "react";
-import { ethers, Signer } from "ethers";
-import { Button } from "@/components/ui/button";
-import { Wallet, Upload, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
-interface WalletConnectProps {
-  hasGeneratedCode: boolean;
-  onDeploy: () => Promise<void>;
-}
-
-export const WalletConnect = ({ hasGeneratedCode, onDeploy }: WalletConnectProps) => {
-  const [signer, setSigner] = useState<Signer | null>(null);
+export default function WalletConnect() {
   const [address, setAddress] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [action, setAction] = useState<"connect" | "deploy" | null>(null);
+  const [balance, setBalance] = useState<string>("0");
+  const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
+
+  // Example testnet ERC20 token (Mumbai USDC test token)
+  const TEST_TOKEN_ADDRESS = "0xFE724a82981Cf18eB3c223d35c8A9A56C1B23b97"; // Replace with any token you like
+  const RECIPIENT_ADDRESS = "0x000000000000000000000000000000000000dead"; // Test recipient
+
+  useEffect(() => {
+    if ((window as any).ethereum) {
+      const p = new ethers.providers.Web3Provider((window as any).ethereum);
+      setProvider(p);
+    } else {
+      console.warn("MetaMask not found");
+    }
+  }, []);
 
   const connectWallet = async () => {
-    if (!window.ethereum) {
-      toast.error("MetaMask not detected", {
-        description: "Please install the MetaMask extension to continue.",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setAction("connect");
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const connectedSigner = await provider.getSigner();
-      const connectedAddress = await connectedSigner.getAddress();
-
-      setSigner(connectedSigner);
-      setAddress(connectedAddress);
-
-      toast.success("Wallet connected successfully!", {
-        description: `Connected as ${connectedAddress.slice(0, 6)}...${connectedAddress.slice(-4)}`
-      });
-    } catch (error: any) {
-      if (error.code === 4001) {
-        toast.error("Connection rejected", { description: "You need to connect your wallet to proceed." });
-      } else {
-        toast.error("Connection failed", { description: error.message });
-      }
-    } finally {
-      setIsLoading(false);
-      setAction(null);
-    }
+    if (!provider) return;
+    const accounts = await provider.send("eth_requestAccounts", []);
+    setAddress(accounts[0]);
+    const bal = await getBalanceAction(accounts[0]);
+    setBalance(bal);
   };
 
-  const deployToBlockchain = async () => {
-    setIsLoading(true);
-    setAction("deploy");
-    toast.info("Deployment initiated...", {
-      description: "Your code is being sent to the server for deployment.",
-    });
-
+  const sendToken = async () => {
+    if (!address) return;
     try {
-      await onDeploy();
-    } catch (error: any) {
-        toast.error("Deployment failed", { description: error.message });
-    } finally {
-        setIsLoading(false);
-        setAction(null);
+      const tx = await smartTransfer({
+        to: RECIPIENT_ADDRESS,
+        tokenAddress: TEST_TOKEN_ADDRESS,
+        amount: "0.01" // Send 0.01 token for testing
+      });
+      console.log("Transaction sent:", tx.hash);
+      alert(`Transaction sent! Hash: ${tx.hash}`);
+    } catch (err) {
+      console.error(err);
+      alert(`Transaction failed: ${err}`);
     }
   };
-
-  const isConnected = !!signer;
 
   return (
-    <div className="flex items-center gap-3">
-      {!isConnected ? (
-        <Button
-          onClick={connectWallet}
-          variant="outline"
-          className="border-primary/50 hover:bg-primary/10"
-          disabled={isLoading}
-        >
-          {isLoading && action === "connect" ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Wallet className="h-4 w-4 mr-2" />
-          )}
-          {isLoading && action === "connect" ? "Connecting..." : "Connect Wallet"}
-        </Button>
-      ) : (
-        <>
-          <div className="px-3 py-2 rounded-md bg-card/50 border border-border text-xs font-mono">
-            {address.slice(0, 6)}...{address.slice(-4)}
-          </div>
-          <Button
-            onClick={deployToBlockchain}
-            disabled={!hasGeneratedCode || isLoading}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-          >
-            {isLoading && action === "deploy" ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
-            {isLoading && action === "deploy" ? "Deploying..." : "Deploy"}
-          </Button>
-        </>
+    <div style={{ padding: "20px", maxWidth: "400px", margin: "auto" }}>
+      <h2>VibeCoding Wallet</h2>
+      <button onClick={connectWallet}>Connect Wallet</button>
+      {address && (
+        <div>
+          <p><strong>Address:</strong> {address}</p>
+          <p><strong>Balance:</strong> {balance} ETH</p>
+          <button onClick={sendToken}>Send 0.01 Test Token</button>
+        </div>
       )}
     </div>
   );
-};
+}
