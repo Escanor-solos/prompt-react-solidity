@@ -1,280 +1,84 @@
-import { useState, useEffect } from "react"; // NEW: Import useEffect
-import { ethers, Signer } from "ethers";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { CodeDisplay } from "@/components/CodeDisplay";
-import { Loader2, Sparkles, Code2, Rocket, Wallet, Upload } from "lucide-react";
-import { toast } from "sonner";
+import React, { useState } from "react";
+import WalletConnect from "../components/WalletConnect";
+import { sendTransaction, readContract, smartTransfer, sendUserOpToRelayer } from "../core/agentkit";
+import { ethers } from "ethers";
 
-const Index = () => {
-  // --- NEW: State to check if component is mounted ---
-  const [isMounted, setIsMounted] = useState(false);
+// Example simple contract ABI and bytecode for testing
+const SIMPLE_CONTRACT_ABI = [
+  "function store(uint256 value)",
+  "function retrieve() view returns (uint256)"
+];
+const SIMPLE_CONTRACT_BYTECODE = "0x608060405234801561001057600080fd5b5061011e806100206000396000f3fe60806040..."; // Truncated example
 
-  // State for the generator
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [solidityCode, setSolidityCode] = useState("");
-  const [reactCode, setReactCode] = useState("");
-  const [hasGenerated, setHasGenerated] = useState(false);
+export default function IndexPage() {
+  const [deployedAddress, setDeployedAddress] = useState<string>("");
+  const [contractValue, setContractValue] = useState<string>("");
+  const [gaslessStatus, setGaslessStatus] = useState<string>("");
 
-  // State for Wallet and Deployment
-  const [signer, setSigner] = useState<Signer | null>(null);
-  const [address, setAddress] = useState<string>("");
-  const [isConnecting, setIsConnecting] = useState<boolean>(false);
-  const [isDeploying, setIsDeploying] = useState<boolean>(false);
-
-  // --- NEW: useEffect to run only on client-side ---
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      toast.error("MetaMask not detected", { description: "Please install the MetaMask extension." });
-      return;
-    }
-    setIsConnecting(true);
+  const deployContract = async () => {
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const connectedSigner = await provider.getSigner();
-      const connectedAddress = await connectedSigner.getAddress();
-      setSigner(connectedSigner);
-      setAddress(connectedAddress);
-      toast.success("Wallet connected!", { description: `Connected as ${connectedAddress.slice(0, 6)}...` });
-    } catch (error: any) {
-      if (error.code === 4001) {
-        toast.error("Connection rejected by user.");
-      } else {
-        toast.error("Connection failed", { description: error.message });
-      }
-    } finally {
-      setIsConnecting(false);
+      // Create deployment transaction
+      const factory = new ethers.ContractFactory(SIMPLE_CONTRACT_ABI, SIMPLE_CONTRACT_BYTECODE);
+      const tx = await sendTransaction({
+        to: "", // empty because it's a deployment
+        data: factory.getDeployTransaction().data!
+      });
+      setDeployedAddress(tx.contractAddress || "Deployed (no address returned)");
+      alert(`Contract deployed! TxHash: ${tx.hash}`);
+    } catch (err) {
+      console.error(err);
+      alert(`Deployment failed: ${err}`);
     }
   };
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      toast.error("Please enter a description for your dApp");
-      return;
-    }
-    setLoading(true);
-    setSolidityCode("");
-    setReactCode("");
-    setHasGenerated(false);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ prompt }),
-      });
-      if (!response.ok) throw new Error("Failed to generate code");
-      const data = await response.json();
-      setSolidityCode(data.solidityCode);
-      setReactCode(data.reactCode);
-      setHasGenerated(true);
-      toast.success("Code generated successfully!");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Failed to generate code. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const readStoredValue = async () => {
+    if (!deployedAddress) return alert("Deploy contract first!");
+    const value = await readContract({
+      address: deployedAddress,
+      abi: SIMPLE_CONTRACT_ABI,
+      functionName: "retrieve",
+    });
+    setContractValue(value.toString());
   };
 
-  const handleDeploy = async () => {
-    if (!solidityCode) {
-      toast.error("No code has been generated to deploy.");
-      return;
-    }
-    setIsDeploying(true);
-    toast.info("Deployment initiated...", { description: "Sending code to the server for deployment." });
+  const sendGaslessTransaction = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deploy-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ solidityCode }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Deployment failed. Check server logs.');
-      }
-      const result = await response.json();
-      toast.success("Deployment Complete!", {
-        description: `Contract deployed to: ${result.contractAddress.slice(0, 6)}...`,
-        action: {
-          label: "View on Snowtrace",
-          onClick: () => window.open(result.explorerUrl, '_blank'),
-        },
-      });
-    } catch (error: any) {
-      toast.error("Deployment failed", { description: error.message });
-    } finally {
-      setIsDeploying(false);
+      setGaslessStatus("Sending...");
+      const userOp = {
+        sender: "0xYourSmartAccountAddressHere",
+        callData: "0xYourEncodedFunctionDataHere"
+      };
+      const result = await sendUserOpToRelayer(userOp);
+      setGaslessStatus(`UserOp sent! TxHash: ${result.txHash || "Unknown"}`);
+    } catch (err) {
+      console.error(err);
+      setGaslessStatus(`Failed: ${err}`);
     }
-  };
-
-  const isConnected = !!signer;
-
-  const renderWalletButtons = () => {
-    if (!isMounted) {
-      // Render a placeholder or nothing on the server to prevent hydration mismatch
-      return <div className="h-10 w-36"></div>; 
-    }
-    return (
-      <div className="flex items-center gap-3">
-        {!isConnected ? (
-          <Button onClick={connectWallet} variant="outline" className="border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300" disabled={isConnecting}>
-            {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
-            {isConnecting ? "Connecting..." : "Connect Wallet"}
-          </Button>
-        ) : (
-          <>
-            <div className="px-3 py-2 rounded-md bg-card/50 border border-border text-xs font-mono">
-              {address.slice(0, 6)}...{address.slice(-4)}
-            </div>
-            <Button onClick={handleDeploy} disabled={!hasGenerated || isDeploying} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-              {isDeploying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-              {isDeploying ? "Deploying..." : "Deploy"}
-            </Button>
-          </>
-        )}
-      </div>
-    );
   };
 
   return (
-    <div className="min-h-screen ">
-      <header className="container mx-auto px-4 py-6 flex items-center justify-between">
-        <div className="text-xl font-bold text-white">
-          <span className="text-primary">Vibe</span>Coding
-        </div>
-        {renderWalletButtons()}
-      </header>
-      
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm mb-4"
-            style={{ 
-              border: '1px solid currentColor',
-              borderRadius: '9999px',
-              borderColor: 'hsl(var(--muted-foreground)/0.5)',
-            }}>
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-muted-foreground">AI-Powered Development Platform</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
-            <span className="text-white">Build dApps with </span>
-            <span style={{ color: '#ff9933' }}>Simple</span>
-            <br />
-            <span style={{ 
-              backgroundImage: 'linear-gradient(to bottom, #ff9933, #66ccff)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              color: 'transparent',
-            }}>Prompts</span>
-          </h1>
-          
-          <div className="p-4 rounded-xl bg-black/20 backdrop-blur-sm mx-auto max-w-2xl">
-            <p className="text-xl text-muted-foreground font-semibold">
-              VibeCoding transforms natural language into production-ready decentralized applications. 
-              Get gasless dApps on Avalanche with 0xGasless integration.
-            </p>
-          </div>
-        </div>
+    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
+      <h1>VibeCoding Dapp Demo</h1>
+      <WalletConnect />
 
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
-            <Textarea
-              placeholder="Describe your dApp... (e.g., 'Create an NFT marketplace with royalty payments on Avalanche')"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="min-h-32 text-lg bg-background border-input resize-none"
-              disabled={loading || isDeploying}
-            />
-            
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <span>Powered by AI</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Rocket className="h-4 w-4 text-accent" />
-                  <span>Deploy in seconds</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Code2 className="h-4 w-4 text-primary" />
-                  <span>Full-stack code</span>
-                </div>
-              </div>
-              
-              <Button onClick={handleGenerate} disabled={loading || !prompt.trim() || isDeploying} size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Generate
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
+      <hr style={{ margin: "20px 0" }} />
 
-        {hasGenerated && (
-          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <CodeDisplay solidityCode={solidityCode} reactCode={reactCode} />
-          </div>
-        )}
+      <h2>Deploy Test Contract</h2>
+      <button onClick={deployContract}>Deploy Simple Contract</button>
+      {deployedAddress && <p>Deployed Contract Address: {deployedAddress}</p>}
+      <button onClick={readStoredValue}>Read Stored Value</button>
+      {contractValue && <p>Stored Value: {contractValue}</p>}
 
-        {!hasGenerated && (
-          <div className="max-w-5xl mx-auto mt-20 grid md:grid-cols-3 gap-8">
-            <div className="group text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30 hover:scale-[1.03] hover:shadow-2xl hover:shadow-primary/50 cursor-pointer">
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Code2 className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-white">Smart Contracts</h3>
-              <p className="text-muted-foreground">
-                AI-generated Solidity with 0xGasless & ERC-4337 on Avalanche
-              </p>
-            </div>
+      <hr style={{ margin: "20px 0" }} />
 
-            <div className="group text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30 hover:scale-[1.03] hover:shadow-2xl hover:shadow-accent/50 cursor-pointer">
-              <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="h-6 w-6 text-accent" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-white">Gasless Frontend</h3>
-              <p className="text-muted-foreground">
-                0xGasless SDK integrated UI for seamless user experience
-              </p>
-            </div>
+      <h2>Gasless Transaction (Relayer)</h2>
+      <button onClick={sendGaslessTransaction}>Send Gasless TX</button>
+      {gaslessStatus && <p>{gaslessStatus}</p>}
 
-            <div className="group text-center p-6 rounded-xl bg-black/20 backdrop-blur-sm transition-all duration-300 hover:bg-black/30 hover:scale-[1.03] hover:shadow-2xl hover:shadow-primary/50 cursor-pointer">
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Rocket className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-white">Deploy to Avalanche</h3>
-              <p className="text-muted-foreground">
-                Production-ready code for Avalanche C-Chain deployment
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+      <hr style={{ margin: "20px 0" }} />
+
+      <h2>Send Test Token</h2>
+      <p>Use the WalletConnect buttons above to send test tokens via AgentKit</p>
     </div>
   );
-};
-
-export default Index;
+}
