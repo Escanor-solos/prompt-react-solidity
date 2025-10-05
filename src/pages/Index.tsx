@@ -1,48 +1,69 @@
-// Your main page file (e.g., src/pages/index.tsx)
-
 import { useState } from "react";
+import { ethers, Signer } from "ethers"; // NEW: Import ethers
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeDisplay } from "@/components/CodeDisplay";
-import { WalletConnect } from "@/components/WalletConnect"; // Import the component
-import { Loader2, Sparkles, Code2, Rocket } from "lucide-react";
+import { Loader2, Sparkles, Code2, Rocket, Wallet, Upload } from "lucide-react"; // NEW: Import Wallet and Upload icons
 import { toast } from "sonner";
 
 const Index = () => {
+  // State for the generator
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [solidityCode, setSolidityCode] = useState("");
   const [reactCode, setReactCode] = useState("");
   const [hasGenerated, setHasGenerated] = useState(false);
 
+  // --- NEW: State for Wallet and Deployment ---
+  const [signer, setSigner] = useState<Signer | null>(null);
+  const [address, setAddress] = useState<string>("");
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [isDeploying, setIsDeploying] = useState<boolean>(false);
+
+  // --- NEW: Live Wallet Connection Logic ---
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      toast.error("MetaMask not detected", { description: "Please install the MetaMask extension." });
+      return;
+    }
+    setIsConnecting(true);
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const connectedSigner = await provider.getSigner();
+      const connectedAddress = await connectedSigner.getAddress();
+      setSigner(connectedSigner);
+      setAddress(connectedAddress);
+      toast.success("Wallet connected!", { description: `Connected as ${connectedAddress.slice(0, 6)}...` });
+    } catch (error: any) {
+      if (error.code === 4001) {
+        toast.error("Connection rejected by user.");
+      } else {
+        toast.error("Connection failed", { description: error.message });
+      }
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast.error("Please enter a description for your dApp");
       return;
     }
-
     setLoading(true);
     setSolidityCode("");
     setReactCode("");
     setHasGenerated(false);
-
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ prompt }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to generate code");
-      }
-
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!response.ok) throw new Error("Failed to generate code");
       const data = await response.json();
       setSolidityCode(data.solidityCode);
       setReactCode(data.reactCode);
@@ -56,35 +77,43 @@ const Index = () => {
     }
   };
 
+  // --- NEW: Live Deployment Logic ---
   const handleDeploy = async () => {
-    if (!solidityCode || !reactCode) {
-        throw new Error("No code has been generated to deploy.");
+    if (!solidityCode) {
+      toast.error("No code has been generated to deploy.");
+      return;
     }
-    
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deploy-code`, {
+    setIsDeploying(true);
+    toast.info("Deployment initiated...", { description: "Sending code to the server for deployment." });
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deploy-code`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ solidityCode, reactCode }),
-    });
-
-    if (!response.ok) {
+        body: JSON.stringify({ solidityCode }), // Only need to send solidityCode
+      });
+      if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Deployment failed. Check the server logs.');
-    }
-
-    const result = await response.json();
-    
-    toast.success("Deployment Complete!", {
-        description: `Contract deployed to: ${result.contractAddress.slice(0, 6)}...${result.contractAddress.slice(-4)}`,
+        throw new Error(errorData.error || 'Deployment failed. Check server logs.');
+      }
+      const result = await response.json();
+      toast.success("Deployment Complete!", {
+        description: `Contract deployed to: ${result.contractAddress.slice(0, 6)}...`,
         action: {
-            label: "View on Snowtrace",
-            onClick: () => window.open(result.explorerUrl, '_blank'),
+          label: "View on Snowtrace",
+          onClick: () => window.open(result.explorerUrl, '_blank'),
         },
-    });
+      });
+    } catch (error: any) {
+      toast.error("Deployment failed", { description: error.message });
+    } finally {
+      setIsDeploying(false);
+    }
   };
+
+  const isConnected = !!signer;
 
   return (
     <div className="min-h-screen ">
@@ -92,21 +121,36 @@ const Index = () => {
         <div className="text-xl font-bold text-white">
           <span className="text-primary">Vibe</span>Coding
         </div>
-        <WalletConnect 
-            hasGeneratedCode={hasGenerated}
-            onDeploy={handleDeploy}
-        />
+        {/* --- NEW: Wallet Button JSX is now here --- */}
+        <div className="flex items-center gap-3">
+          {!isConnected ? (
+            <Button onClick={connectWallet} variant="outline" className="border-primary/50 hover:bg-primary/10" disabled={isConnecting}>
+              {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
+              {isConnecting ? "Connecting..." : "Connect Wallet"}
+            </Button>
+          ) : (
+            <>
+              <div className="px-3 py-2 rounded-md bg-card/50 border border-border text-xs font-mono">
+                {address.slice(0, 6)}...{address.slice(-4)}
+              </div>
+              <Button onClick={handleDeploy} disabled={!hasGenerated || isDeploying} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                {isDeploying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                {isDeploying ? "Deploying..." : "Deploy"}
+              </Button>
+            </>
+          )}
+        </div>
       </header>
       
       <div className="container mx-auto px-4 py-16">
+        {/* ... (The rest of your page is unchanged) ... */}
         <div className="text-center mb-12 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm mb-4"
             style={{ 
               border: '1px solid currentColor',
               borderRadius: '9999px',
               borderColor: 'hsl(var(--muted-foreground)/0.5)',
-            }}
-          >
+            }}>
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-muted-foreground">AI-Powered Development Platform</span>
           </div>
@@ -139,7 +183,7 @@ const Index = () => {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               className="min-h-32 text-lg bg-background border-input resize-none"
-              disabled={loading}
+              disabled={loading || isDeploying}
             />
             
             <div className="flex items-center justify-between mt-4">
@@ -158,12 +202,7 @@ const Index = () => {
                 </div>
               </div>
               
-              <Button
-                onClick={handleGenerate}
-                disabled={loading || !prompt.trim()}
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8"
-              >
+              <Button onClick={handleGenerate} disabled={loading || !prompt.trim() || isDeploying} size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8">
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
