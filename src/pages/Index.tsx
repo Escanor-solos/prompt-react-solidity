@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ethers, Signer } from "ethers"; // NEW: Import ethers
+import { ethers, Signer } from "ethers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeDisplay } from "@/components/CodeDisplay";
-import { Loader2, Sparkles, Code2, Rocket, Wallet, Upload } from "lucide-react"; // NEW: Import Wallet and Upload icons
+import { Loader2, Sparkles, Code2, Rocket, Wallet, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -14,13 +14,12 @@ const Index = () => {
   const [reactCode, setReactCode] = useState("");
   const [hasGenerated, setHasGenerated] = useState(false);
 
-  // --- NEW: State for Wallet and Deployment ---
+  // State for Wallet and Deployment
   const [signer, setSigner] = useState<Signer | null>(null);
   const [address, setAddress] = useState<string>("");
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isDeploying, setIsDeploying] = useState<boolean>(false);
 
-  // --- NEW: Live Wallet Connection Logic ---
   const connectWallet = async () => {
     if (!window.ethereum) {
       toast.error("MetaMask not detected", { description: "Please install the MetaMask extension." });
@@ -77,7 +76,6 @@ const Index = () => {
     }
   };
 
-  // --- NEW: Live Deployment Logic ---
   const handleDeploy = async () => {
     if (!solidityCode) {
       toast.error("No code has been generated to deploy.");
@@ -92,7 +90,7 @@ const Index = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ solidityCode }), // Only need to send solidityCode
+        body: JSON.stringify({ solidityCode }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -121,10 +119,14 @@ const Index = () => {
         <div className="text-xl font-bold text-white">
           <span className="text-primary">Vibe</span>Coding
         </div>
-        {/* --- NEW: Wallet Button JSX is now here --- */}
         <div className="flex items-center gap-3">
           {!isConnected ? (
-            <Button onClick={connectWallet} variant="outline" className="border-primary/50 hover:bg-primary/10" disabled={isConnecting}>
+            <Button 
+              onClick={connectWallet} 
+              variant="outline" 
+              className="border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300" 
+              disabled={isConnecting}
+            >
               {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
               {isConnecting ? "Connecting..." : "Connect Wallet"}
             </Button>
