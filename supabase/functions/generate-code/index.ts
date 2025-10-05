@@ -12,10 +12,10 @@ serve(async (req) => {
 
   try {
     const { prompt } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
     // Generate Solidity smart contract
@@ -32,11 +32,11 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an expert React and Web3 developer specializing in Avalanche blockchain and 0xGasless SDK integration. Generate modern React components using TypeScript, hooks, ethers.js v6, and 0xGasless SDK for gasless transactions. Create a clean, functional interface that interacts with the smart contract on Avalanche C-Chain. Implement Account Abstraction (ERC-4337) features using 0xGasless SDK to enable gasless transactions. Use Tailwind CSS for styling. Return ONLY the React/TypeScript code without any markdown formatting or explanations. Include necessary imports, 0xGasless SDK initialization, and proper TypeScript types. Configure for Avalanche C-Chain RPC."
+            content: "You are an expert Solidity developer for the Avalanche C-Chain. Your task is to generate a secure and gas-efficient smart contract based on the user's request. Use Solidity version 0.8.20 or newer. Return ONLY the Solidity code without any markdown formatting or explanations."
           },
           {
             role: "user",
-            content: `Generate a React frontend component for Avalanche blockchain that interacts with this smart contract using 0xGasless SDK for gasless transactions:\n\n${solidityCode}\n\nOriginal request: ${prompt}\n\nInclude: 0xGasless SDK setup, smart wallet creation, gasless transaction handling, and Avalanche C-Chain configuration.`
+            content: `Generate a Solidity smart contract for the following request: ${prompt}`
           }
         ],
       }),
@@ -52,22 +52,22 @@ serve(async (req) => {
     const solidityCode = solidityData.choices[0].message.content;
 
     // Generate React frontend
-    const reactResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const reactResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
+        model: "gpt-4o",
+       messages: [
           {
             role: "system",
-            content: "You are an expert React and Web3 developer specializing in Avalanche blockchain and 0xGasless SDK integration. Generate modern React components using TypeScript, hooks, ethers.js v6, and 0xGasless SDK for gasless transactions. Create a clean, functional interface that interacts with the smart contract on Avalanche C-Chain. Implement Account Abstraction (ERC-4337) features using 0xGasless SDK to enable gasless transactions. Use Tailwind CSS for styling. Return ONLY the React/TypeScript code without any markdown formatting or explanations. Include necessary imports, 0xGasless SDK initialization, and proper TypeScript types. Configure for Avalanche C-Chain RPC."
+            content: "You are an expert React and Web3 developer. Generate a modern React component using TypeScript, hooks, and ethers.js v6 that interacts with a given smart contract on the Avalanche C-Chain. Use Tailwind CSS for styling. Return ONLY the React/TypeScript code without any markdown formatting or explanations. Ensure the contract address is a placeholder variable."
           },
           {
             role: "user",
-            content: `Generate a React frontend component for Avalanche blockchain that interacts with this smart contract using 0xGasless SDK for gasless transactions:\n\n${solidityCode}\n\nOriginal request: ${prompt}\n\nInclude: 0xGasless SDK setup, smart wallet creation, gasless transaction handling, and Avalanche C-Chain configuration.`
+            content: `Generate a React frontend component for the Avalanche blockchain that interacts with this smart contract:\n\n${solidityCode}\n\nOriginal request: ${prompt}`
           }
         ],
       }),
