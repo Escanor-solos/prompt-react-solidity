@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { smartTransfer, getBalanceAction } from "../core/agentkit";
+import { SmartTransfer, GetBalanceAction } from "../core/agentkit";
 import { ethers } from "ethers";
 
 export default function WalletConnect() {
