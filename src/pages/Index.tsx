@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import WalletConnect from "../components/WalletConnect";
-import { sendTransaction, readContract, smartTransfer, sendUserOpToRelayer } from "../core/agentkit";
+import { SendTransaction, ReadContract, SmartTransfer, SendUserOpToRelayer } from "../core/agentkit";
 import { ethers } from "ethers";
 
 // Example simple contract ABI and bytecode for testing
