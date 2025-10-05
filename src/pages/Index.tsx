@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // NEW: Import useEffect
 import { ethers, Signer } from "ethers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,9 @@ import { Loader2, Sparkles, Code2, Rocket, Wallet, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
+  // --- NEW: State to check if component is mounted ---
+  const [isMounted, setIsMounted] = useState(false);
+
   // State for the generator
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,6 +22,11 @@ const Index = () => {
   const [address, setAddress] = useState<string>("");
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isDeploying, setIsDeploying] = useState<boolean>(false);
+
+  // --- NEW: useEffect to run only on client-side ---
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const connectWallet = async () => {
     if (!window.ethereum) {
@@ -113,39 +121,43 @@ const Index = () => {
 
   const isConnected = !!signer;
 
+  const renderWalletButtons = () => {
+    if (!isMounted) {
+      // Render a placeholder or nothing on the server to prevent hydration mismatch
+      return <div className="h-10 w-36"></div>; 
+    }
+    return (
+      <div className="flex items-center gap-3">
+        {!isConnected ? (
+          <Button onClick={connectWallet} variant="outline" className="border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300" disabled={isConnecting}>
+            {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
+            {isConnecting ? "Connecting..." : "Connect Wallet"}
+          </Button>
+        ) : (
+          <>
+            <div className="px-3 py-2 rounded-md bg-card/50 border border-border text-xs font-mono">
+              {address.slice(0, 6)}...{address.slice(-4)}
+            </div>
+            <Button onClick={handleDeploy} disabled={!hasGenerated || isDeploying} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+              {isDeploying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+              {isDeploying ? "Deploying..." : "Deploy"}
+            </Button>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen ">
       <header className="container mx-auto px-4 py-6 flex items-center justify-between">
         <div className="text-xl font-bold text-white">
           <span className="text-primary">Vibe</span>Coding
         </div>
-        <div className="flex items-center gap-3">
-          {!isConnected ? (
-            <Button 
-              onClick={connectWallet} 
-              variant="outline" 
-              className="border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300" 
-              disabled={isConnecting}
-            >
-              {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
-              {isConnecting ? "Connecting..." : "Connect Wallet"}
-            </Button>
-          ) : (
-            <>
-              <div className="px-3 py-2 rounded-md bg-card/50 border border-border text-xs font-mono">
-                {address.slice(0, 6)}...{address.slice(-4)}
-              </div>
-              <Button onClick={handleDeploy} disabled={!hasGenerated || isDeploying} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-                {isDeploying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                {isDeploying ? "Deploying..." : "Deploy"}
-              </Button>
-            </>
-          )}
-        </div>
+        {renderWalletButtons()}
       </header>
       
       <div className="container mx-auto px-4 py-16">
-        {/* ... (The rest of your page is unchanged) ... */}
         <div className="text-center mb-12 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm mb-4"
             style={{ 
