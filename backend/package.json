@@ -65,7 +65,7 @@
     "vaul": "^0.9.9",
     "zod": "^3.25.76",
 
-    /* ✅ --- Added for backend --- */
+    
     "express": "^4.19.2",
     "cors": "^2.8.5",
     "body-parser": "^1.20.2",
@@ -92,7 +92,7 @@
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
 
-    /* ✅ --- Added for backend runtime --- */
+    
     "ts-node": "^10.9.2",
     "nodemon": "^3.1.0",
     "concurrently": "^9.0.1"
