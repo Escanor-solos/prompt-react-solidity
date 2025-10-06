@@ -64,13 +64,13 @@ const Index = () => {
     setReactCode("");
     setHasGenerated(false);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`, {
+      const response = await fetch(`${API_BASE}/functions/v1/generate-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: userPrompt }),
       });
       if (!response.ok) throw new Error("Failed to generate code");
       const data = await response.json();
@@ -94,7 +94,7 @@ const Index = () => {
     setIsDeploying(true);
     toast.info("Deployment initiated...", { description: "Sending code to the server for deployment." });
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deploy-code`, {
+      const response = await fetch(`${API_BASE}/functions/v1/deploy-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
