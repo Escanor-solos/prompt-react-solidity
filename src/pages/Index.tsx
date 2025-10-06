@@ -6,6 +6,8 @@ import { CodeDisplay } from "@/components/CodeDisplay";
 import { Loader2, Sparkles, Code2, Rocket, Wallet, Upload } from "lucide-react";
 import { toast } from "sonner";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_SUPABASE_URL;
+
 const Index = () => {
   // --- NEW: State to check if component is mounted ---
   const [isMounted, setIsMounted] = useState(false);
