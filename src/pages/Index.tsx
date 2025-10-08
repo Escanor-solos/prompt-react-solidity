@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // NEW: Import useEffect
+import { useState, useEffect } from "react";
 import { ethers, Signer } from "ethers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,16 +6,18 @@ import { CodeDisplay } from "@/components/CodeDisplay";
 import { Loader2, Sparkles, Code2, Rocket, Wallet, Upload } from "lucide-react";
 import { toast } from "sonner";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_SUPABASE_URL;
+// Define the backend URL. Make sure this matches the port your backend is running on.
+const BACKEND_URL = "http://localhost:5000";
 
 const Index = () => {
-  // --- NEW: State to check if component is mounted ---
+  // State to check if component is mounted (for preventing hydration errors)
   const [isMounted, setIsMounted] = useState(false);
 
   // State for the generator
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [solidityCode, setSolidityCode] = useState("");
+  // Note: The current backend only generates Solidity. reactCode is kept for future use.
   const [reactCode, setReactCode] = useState("");
   const [hasGenerated, setHasGenerated] = useState(false);
 
@@ -25,7 +27,6 @@ const Index = () => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isDeploying, setIsDeploying] = useState<boolean>(false);
 
-  // --- NEW: useEffect to run only on client-side ---
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -64,23 +65,33 @@ const Index = () => {
     setReactCode("");
     setHasGenerated(false);
     try {
-      const response = await fetch(`${API_BASE}/functions/v1/generate-code`, {
+      // CORRECTED: Fetch from your local backend's /build endpoint
+      const response = await fetch(`${BACKEND_URL}/build`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          // REMOVED: Unnecessary Authorization header
         },
-        body: JSON.stringify({ prompt: userPrompt }),
+        // CORRECTED: Changed 'userPrompt' to the correct state variable 'prompt'
+        body: JSON.stringify({ prompt }),
       });
-      if (!response.ok) throw new Error("Failed to generate code");
+
       const data = await response.json();
-      setSolidityCode(data.solidityCode);
-      setReactCode(data.reactCode);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to generate code from server.");
+      }
+
+      // CORRECTED: Handle the response from your new backend
+      setSolidityCode(data.code);
       setHasGenerated(true);
-      toast.success("Code generated successfully!");
-    } catch (error) {
+      toast.success("Code generated successfully!", { description: `Generated from ${data.source}` });
+
+    } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Failed to generate code. Please try again.");
+      toast.error("Failed to generate code.", {
+        description: error.message || "Please try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -94,24 +105,32 @@ const Index = () => {
     setIsDeploying(true);
     toast.info("Deployment initiated...", { description: "Sending code to the server for deployment." });
     try {
-      const response = await fetch(`${API_BASE}/functions/v1/deploy-code`, {
+      // CORRECTED: Fetch from your local backend's /deploy endpoint
+      const response = await fetch(`${BACKEND_URL}/deploy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          // REMOVED: Unnecessary Authorization header
         },
-        body: JSON.stringify({ solidityCode }),
+        // CORRECTED: Backend expects 'code' not 'solidityCode'
+        body: JSON.stringify({ code: solidityCode }),
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Deployment failed. Check server logs.');
-      }
+
       const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Deployment failed. Check server logs.');
+      }
+      
+      // CORRECTED: Get contract address from the new response structure
+      const contractAddress = result.result?.contractAddress;
+      const explorerUrl = `https://mumbai.polygonscan.com/address/${contractAddress}`;
+
       toast.success("Deployment Complete!", {
-        description: `Contract deployed to: ${result.contractAddress.slice(0, 6)}...`,
+        description: `Contract deployed to: ${contractAddress.slice(0, 6)}...${contractAddress.slice(-4)}`,
         action: {
-          label: "View on Snowtrace",
-          onClick: () => window.open(result.explorerUrl, '_blank'),
+          label: "View on Polygonscan",
+          onClick: () => window.open(explorerUrl, '_blank'),
         },
       });
     } catch (error: any) {
@@ -125,8 +144,7 @@ const Index = () => {
 
   const renderWalletButtons = () => {
     if (!isMounted) {
-      // Render a placeholder or nothing on the server to prevent hydration mismatch
-      return <div className="h-10 w-36"></div>; 
+      return <div className="h-10 w-36 bg-card/20 animate-pulse rounded-md"></div>;
     }
     return (
       <div className="flex items-center gap-3">
